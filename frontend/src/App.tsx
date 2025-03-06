@@ -42,14 +42,9 @@ const theme = createTheme({
       default: '#121212',
       paper: '#1e1e1e',
     },
-    text: {
-      primary: '#fff',
-      secondary: 'rgba(255, 255, 255, 0.7)',
-    },
-    divider: 'rgba(255, 255, 255, 0.12)',
   },
   typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
     h5: {
       fontWeight: 600,
     },
@@ -78,33 +73,11 @@ const theme = createTheme({
         },
       },
     },
-    MuiListItemIcon: {
+    MuiButton: {
       styleOverrides: {
         root: {
-          color: '#90caf9',
-          minWidth: 40,
-        },
-      },
-    },
-    MuiListItemText: {
-      styleOverrides: {
-        primary: {
-          color: '#fff',
-        },
-      },
-    },
-    MuiAppBar: {
-      styleOverrides: {
-        root: {
-          backgroundColor: '#1e1e1e',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.12)',
-        },
-      },
-    },
-    MuiIconButton: {
-      styleOverrides: {
-        root: {
-          color: '#90caf9',
+          textTransform: 'none',
+          fontWeight: 600,
         },
       },
     },
@@ -114,14 +87,6 @@ const theme = createTheme({
           backgroundColor: '#1e1e1e',
           borderRadius: 8,
           border: '1px solid rgba(255, 255, 255, 0.12)',
-        },
-      },
-    },
-    MuiDialog: {
-      styleOverrides: {
-        paper: {
-          backgroundColor: '#1e1e1e',
-          borderRadius: 8,
         },
       },
     },
@@ -150,19 +115,19 @@ function App() {
   const drawer = (
     <Box>
       <Toolbar>
-        <StreamIcon sx={{ mr: 1.5, fontSize: 28 }} />
-        <Typography variant="h6" noWrap component="div">
+        <StreamIcon sx={{ mr: 1.5, color: 'primary.main' }} />
+        <Typography variant="h6" noWrap component="div" sx={{ color: 'text.primary' }}>
           Fluently Stream
         </Typography>
       </Toolbar>
-      <Divider sx={{ bgcolor: 'rgba(255,255,255,0.12)' }} />
+      <Divider sx={{ bgcolor: 'divider' }} />
       <List>
         <ListItemButton
           onClick={() => setCurrentView('list')}
           selected={currentView === 'list'}
         >
           <ListItemIcon>
-            <VideoLibraryIcon />
+            <VideoLibraryIcon color="primary" />
           </ListItemIcon>
           <ListItemText primary="My Videos" />
         </ListItemButton>
@@ -171,7 +136,7 @@ function App() {
           selected={currentView === 'upload'}
         >
           <ListItemIcon>
-            <CloudUploadIcon />
+            <CloudUploadIcon color="primary" />
           </ListItemIcon>
           <ListItemText primary="Upload Video" />
         </ListItemButton>
@@ -188,6 +153,9 @@ function App() {
           sx={{
             width: { sm: `calc(100% - ${drawerWidth}px)` },
             ml: { sm: `${drawerWidth}px` },
+            bgcolor: 'background.paper',
+            borderBottom: 1,
+            borderColor: 'divider',
           }}
         >
           <Toolbar>
@@ -200,10 +168,6 @@ function App() {
             >
               <MenuIcon />
             </IconButton>
-            <StreamIcon sx={{ mr: 1.5, display: { xs: 'none', sm: 'block' } }} />
-            <Typography variant="h6" noWrap component="div">
-              Fluently Stream
-            </Typography>
           </Toolbar>
         </AppBar>
 

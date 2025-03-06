@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import {
     Box,
     Button,
@@ -7,45 +7,92 @@ import {
     Alert,
     IconButton,
     Card,
-    CardContent,
     styled,
+    CircularProgress,
 } from '@mui/material';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import CloseIcon from '@mui/icons-material/Close';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import {
+    CloudUpload as CloudUploadIcon,
+    Close as CloseIcon,
+    PlayCircleOutline as PlayCircleOutlineIcon,
+} from '@mui/icons-material';
 import axios from 'axios';
 
 interface VideoUploadProps {
     onUploadSuccess: () => void;
 }
 
-const VisuallyHiddenInput = styled('input')`
-    clip: rect(0 0 0 0);
-    clip-path: inset(50%);
-    height: 1px;
-    overflow: hidden;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    white-space: nowrap;
-    width: 1px;
-`;
+const UploadBox = styled(Box)(({ theme }) => ({
+    border: `2px dashed ${theme.palette.primary.main}`,
+    borderRadius: theme.shape.borderRadius * 2,
+    padding: theme.spacing(4),
+    textAlign: 'center',
+    backgroundColor: theme.palette.mode === 'dark' 
+        ? 'rgba(30, 30, 30, 0.6)'
+        : 'rgba(33, 150, 243, 0.04)',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    '&:hover': {
+        backgroundColor: theme.palette.mode === 'dark'
+            ? 'rgba(30, 30, 30, 0.8)'
+            : 'rgba(33, 150, 243, 0.08)',
+        borderColor: theme.palette.primary.light,
+    }
+}));
+
+const PreviewCard = styled(Card)(({ theme }) => ({
+    position: 'relative',
+    marginTop: theme.spacing(2),
+    backgroundColor: theme.palette.mode === 'dark'
+        ? 'rgba(30, 30, 30, 0.6)'
+        : 'rgba(0, 0, 0, 0.03)',
+    borderRadius: theme.shape.borderRadius,
+    overflow: 'hidden',
+}));
 
 const VideoUpload: React.FC<VideoUploadProps> = ({ onUploadSuccess }) => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState(false);
+    const [dragActive, setDragActive] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            setSelectedFile(file);
-            setError(null);
-            setSuccess(false);
-            setUploadProgress(0);
+    const handleFile = (file: File) => {
+        if (!file) return;
+        
+        const allowedTypes = ['video/mp4', 'video/avi', 'video/quicktime', 'video/x-matroska'];
+        if (!allowedTypes.includes(file.type)) {
+            setError('Please select a valid video file (MP4, AVI, MOV, or MKV)');
+            return;
+        }
+
+        setSelectedFile(file);
+        setError(null);
+    };
+
+    const handleDrag = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === "dragenter" || e.type === "dragover") {
+            setDragActive(true);
+        } else if (e.type === "dragleave") {
+            setDragActive(false);
+        }
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            handleFile(e.dataTransfer.files[0]);
+        }
+    };
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            handleFile(e.target.files[0]);
         }
     };
 
@@ -61,7 +108,6 @@ const VideoUpload: React.FC<VideoUploadProps> = ({ onUploadSuccess }) => {
         try {
             setUploading(true);
             setError(null);
-            setSuccess(false);
 
             await axios.post('http://localhost:5001/api/videos/upload', formData, {
                 headers: {
@@ -75,7 +121,6 @@ const VideoUpload: React.FC<VideoUploadProps> = ({ onUploadSuccess }) => {
                 },
             });
 
-            setSuccess(true);
             setSelectedFile(null);
             if (fileInputRef.current) {
                 fileInputRef.current.value = '';
@@ -86,13 +131,13 @@ const VideoUpload: React.FC<VideoUploadProps> = ({ onUploadSuccess }) => {
             console.error('Upload error:', err);
         } finally {
             setUploading(false);
+            setUploadProgress(0);
         }
     };
 
     const handleClearFile = () => {
         setSelectedFile(null);
         setError(null);
-        setSuccess(false);
         setUploadProgress(0);
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
@@ -101,126 +146,92 @@ const VideoUpload: React.FC<VideoUploadProps> = ({ onUploadSuccess }) => {
 
     return (
         <Box sx={{ maxWidth: 600, mx: 'auto', mt: 4 }}>
-            <Card elevation={3}>
-                <CardContent>
-                    <Box sx={{ 
-                        display: 'flex', 
-                        flexDirection: 'column', 
-                        alignItems: 'center',
-                        p: 3,
-                        textAlign: 'center',
-                        border: '2px dashed',
-                        borderColor: 'grey.300',
-                        borderRadius: 2,
-                        bgcolor: 'grey.50',
-                        mb: 3
-                    }}>
-                        <CloudUploadIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
-                        <Typography variant="h6" gutterBottom>
-                            Upload Video
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                            Supported formats: MP4, AVI, MOV, MKV
-                        </Typography>
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept=".mp4,.avi,.mov,.mkv"
+                onChange={handleFileSelect}
+                style={{ display: 'none' }}
+            />
+
+            {!selectedFile ? (
+                <UploadBox
+                    onDragEnter={handleDrag}
+                    onDragLeave={handleDrag}
+                    onDragOver={handleDrag}
+                    onDrop={handleDrop}
+                    onClick={() => fileInputRef.current?.click()}
+                    sx={{
+                        transform: dragActive ? 'scale(1.02)' : 'scale(1)',
+                        borderColor: dragActive ? 'primary.main' : 'inherit'
+                    }}
+                >
+                    <CloudUploadIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
+                    <Typography variant="h6" gutterBottom>
+                        Drag and drop your video here
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
+                        or click to select a file
+                    </Typography>
+                    <Typography variant="caption" color="textSecondary">
+                        Supported formats: MP4, AVI, MOV, MKV
+                    </Typography>
+                </UploadBox>
+            ) : (
+                <PreviewCard>
+                    <Box sx={{ p: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                            <PlayCircleOutlineIcon sx={{ mr: 1, color: 'primary.main' }} />
+                            <Typography variant="subtitle1" sx={{ flex: 1 }}>
+                                {selectedFile.name}
+                            </Typography>
+                            <IconButton 
+                                size="small" 
+                                onClick={handleClearFile}
+                                sx={{ ml: 1 }}
+                            >
+                                <CloseIcon />
+                            </IconButton>
+                        </Box>
+                        
+                        {uploading && (
+                            <Box sx={{ width: '100%', mt: 2 }}>
+                                <LinearProgress 
+                                    variant="determinate" 
+                                    value={uploadProgress} 
+                                    sx={{ height: 8, borderRadius: 4 }}
+                                />
+                                <Typography 
+                                    variant="body2" 
+                                    color="textSecondary" 
+                                    align="center"
+                                    sx={{ mt: 1 }}
+                                >
+                                    Uploading... {uploadProgress}%
+                                </Typography>
+                            </Box>
+                        )}
+
                         <Button
-                            component="label"
                             variant="contained"
-                            startIcon={<CloudUploadIcon />}
+                            color="primary"
+                            fullWidth
+                            onClick={handleUpload}
                             disabled={uploading}
+                            startIcon={uploading ? <CircularProgress size={20} /> : <CloudUploadIcon />}
+                            sx={{ mt: 2 }}
                         >
-                            Select Video
-                            <VisuallyHiddenInput
-                                ref={fileInputRef}
-                                type="file"
-                                accept=".mp4,.avi,.mov,.mkv"
-                                onChange={handleFileSelect}
-                            />
+                            {uploading ? 'Uploading...' : 'Upload Video'}
                         </Button>
                     </Box>
+                </PreviewCard>
+            )}
 
-                    {selectedFile && (
-                        <Box sx={{ mt: 2 }}>
-                            <Box sx={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                justifyContent: 'space-between',
-                                mb: 1
-                            }}>
-                                <Typography variant="body2">
-                                    Selected file: {selectedFile.name}
-                                </Typography>
-                                <IconButton 
-                                    size="small" 
-                                    onClick={handleClearFile}
-                                    disabled={uploading}
-                                >
-                                    <CloseIcon />
-                                </IconButton>
-                            </Box>
-                            <Typography variant="body2" color="text.secondary" gutterBottom>
-                                Size: {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
-                            </Typography>
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={handleUpload}
-                                disabled={uploading}
-                                fullWidth
-                                sx={{ mt: 2 }}
-                            >
-                                {uploading ? 'Uploading...' : 'Upload Video'}
-                            </Button>
-                        </Box>
-                    )}
-
-                    {uploading && (
-                        <Box sx={{ mt: 2 }}>
-                            <LinearProgress 
-                                variant="determinate" 
-                                value={uploadProgress} 
-                                sx={{ height: 8, borderRadius: 1 }}
-                            />
-                            <Typography 
-                                variant="body2" 
-                                color="text.secondary" 
-                                align="center"
-                                sx={{ mt: 1 }}
-                            >
-                                {uploadProgress}% Uploaded
-                            </Typography>
-                        </Box>
-                    )}
-
-                    {error && (
-                        <Alert 
-                            severity="error" 
-                            sx={{ mt: 2 }}
-                            action={
-                                <IconButton
-                                    aria-label="close"
-                                    color="inherit"
-                                    size="small"
-                                    onClick={() => setError(null)}
-                                >
-                                    <CloseIcon fontSize="inherit" />
-                                </IconButton>
-                            }
-                        >
-                            {error}
-                        </Alert>
-                    )}
-
-                    {success && (
-                        <Alert 
-                            icon={<CheckCircleIcon fontSize="inherit" />}
-                            severity="success" 
-                            sx={{ mt: 2 }}
-                        >
-                            Video uploaded successfully!
-                        </Alert>
-                    )}
-                </CardContent>
-            </Card>
+            {error && (
+                <Alert severity="error" sx={{ mt: 2 }}>
+                    {error}
+                </Alert>
+            )}
         </Box>
     );
 };

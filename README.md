@@ -8,7 +8,7 @@ A modern video streaming platform built with React and Flask, featuring a sleek 
 - 🌓 Modern dark mode interface
 - 📱 Responsive design for all devices
 - 🔒 Encrypted video storage
-- 📤 Easy video upload functionality
+- 📤 Easy video upload functionali
 - 📚 Video library management
 - 🔄 Automatic retry mechanism for network issues
 - 🎮 Custom video player controls

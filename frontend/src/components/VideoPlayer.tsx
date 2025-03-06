@@ -23,6 +23,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, onClose }) => {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [videoInfo, setVideoInfo] = useState<any>(null);
+    const [isBuffering, setIsBuffering] = useState(true);
     const videoRef = useRef<HTMLVideoElement>(null);
     const retryTimeoutRef = useRef<number | null>(null);
     const [retryCount, setRetryCount] = useState(0);
@@ -32,6 +33,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, onClose }) => {
         setLoading(true);
         setError(null);
         setRetryCount(0);
+        setIsBuffering(true);
         
         // Fetch video information
         axios.get(`http://localhost:5001/api/videos`)
@@ -44,9 +46,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, onClose }) => {
             })
             .catch(err => {
                 console.error('Error fetching video info:', err);
-            })
-            .finally(() => {
-                setLoading(false);
+                setError('Error fetching video information');
             });
 
         // Cleanup function
@@ -96,19 +96,33 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, onClose }) => {
         
         console.error('Video Error:', errorMessage);
         setError(errorMessage);
+        setLoading(false);
+        setIsBuffering(false);
     };
 
     const handleLoadStart = () => {
         console.log('Video load started');
         setLoading(true);
+        setIsBuffering(true);
         setError(null);
     };
 
     const handleCanPlay = () => {
         console.log('Video can play');
         setLoading(false);
+        setIsBuffering(false);
         setError(null);
         setRetryCount(0);
+    };
+
+    const handleWaiting = () => {
+        console.log('Video is buffering');
+        setIsBuffering(true);
+    };
+
+    const handlePlaying = () => {
+        console.log('Video is playing');
+        setIsBuffering(false);
     };
 
     const handleLoadedMetadata = () => {
@@ -118,6 +132,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, onClose }) => {
                 videoWidth: videoRef.current.videoWidth,
                 videoHeight: videoRef.current.videoHeight
             });
+            setLoading(false);
         }
     };
 
@@ -173,32 +188,44 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, onClose }) => {
             </DialogTitle>
 
             <DialogContent dividers sx={{ p: 0, bgcolor: 'black' }}>
-                {loading ? (
-                    <Box sx={{ 
-                        display: 'flex', 
-                        justifyContent: 'center', 
-                        alignItems: 'center',
-                        minHeight: '400px'
-                    }}>
-                        <CircularProgress />
-                    </Box>
-                ) : (
-                    <Box sx={{ width: '100%', position: 'relative' }}>
-                        <video
-                            ref={videoRef}
-                            controls
-                            style={{ width: '100%', maxHeight: '70vh' }}
-                            playsInline
-                            onError={handleError}
-                            onLoadStart={handleLoadStart}
-                            onCanPlay={handleCanPlay}
-                            onLoadedMetadata={handleLoadedMetadata}
-                            src={`http://localhost:5001/api/videos/stream/${videoId}`}
-                        >
-                            Your browser does not support the video tag.
-                        </video>
-                    </Box>
-                )}
+                <Box sx={{ width: '100%', position: 'relative' }}>
+                    <video
+                        ref={videoRef}
+                        controls
+                        style={{ width: '100%', maxHeight: '70vh' }}
+                        playsInline
+                        onError={handleError}
+                        onLoadStart={handleLoadStart}
+                        onCanPlay={handleCanPlay}
+                        onWaiting={handleWaiting}
+                        onPlaying={handlePlaying}
+                        onLoadedMetadata={handleLoadedMetadata}
+                        preload="auto"
+                        src={`http://localhost:5001/api/videos/stream/${videoId}`}
+                    >
+                        Your browser does not support the video tag.
+                    </video>
+                    {(loading || isBuffering) && (
+                        <Box sx={{ 
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: 2,
+                            bgcolor: 'rgba(0, 0, 0, 0.5)',
+                            p: 3,
+                            borderRadius: 2
+                        }}>
+                            <CircularProgress />
+                            <Typography color="white">
+                                {loading ? 'Loading video...' : 'Buffering...'}
+                            </Typography>
+                        </Box>
+                    )}
+                </Box>
             </DialogContent>
 
             {error && (

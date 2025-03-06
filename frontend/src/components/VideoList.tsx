@@ -26,7 +26,7 @@ interface Video {
     original_filename: string;
     content_type: string;
     file_size: number;
-    created_at: string;
+    upload_date: string;
     status: string;
 }
 
@@ -89,13 +89,23 @@ const VideoList: React.FC<VideoListProps> = ({ refreshTrigger, onVideoSelect }) 
     };
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                return 'Invalid date';
+            }
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZone: 'UTC' // Since backend sends UTC time
+            });
+        } catch (error) {
+            console.error('Error formatting date:', error);
+            return 'Invalid date';
+        }
     };
 
     if (loading) {
@@ -152,7 +162,7 @@ const VideoList: React.FC<VideoListProps> = ({ refreshTrigger, onVideoSelect }) 
                                         Size: {formatFileSize(video.file_size)}
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
-                                        Uploaded: {formatDate(video.created_at)}
+                                        Uploaded: {formatDate(video.upload_date)}
                                     </Typography>
                                 </CardContent>
                             </CardActionArea>

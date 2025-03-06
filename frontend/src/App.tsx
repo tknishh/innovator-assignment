@@ -19,6 +19,7 @@ import {
   Menu as MenuIcon,
   VideoLibrary as VideoLibraryIcon,
   CloudUpload as CloudUploadIcon,
+  Stream as StreamIcon,
 } from '@mui/icons-material';
 import VideoList from './components/VideoList';
 import VideoUpload from './components/VideoUpload';
@@ -28,15 +29,24 @@ const drawerWidth = 240;
 
 const theme = createTheme({
   palette: {
+    mode: 'dark',
     primary: {
-      main: '#2196f3',
+      main: '#90caf9',
+      light: '#e3f2fd',
+      dark: '#42a5f5',
     },
     secondary: {
-      main: '#f50057',
+      main: '#ce93d8',
     },
     background: {
-      default: '#f5f5f5',
+      default: '#121212',
+      paper: '#1e1e1e',
     },
+    text: {
+      primary: '#fff',
+      secondary: 'rgba(255, 255, 255, 0.7)',
+    },
+    divider: 'rgba(255, 255, 255, 0.12)',
   },
   typography: {
     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
@@ -48,15 +58,70 @@ const theme = createTheme({
     MuiDrawer: {
       styleOverrides: {
         paper: {
-          backgroundColor: '#1976d2',
-          color: '#fff',
+          backgroundColor: '#1e1e1e',
+          borderRight: '1px solid rgba(255, 255, 255, 0.12)',
+        },
+      },
+    },
+    MuiListItemButton: {
+      styleOverrides: {
+        root: {
+          '&:hover': {
+            backgroundColor: 'rgba(144, 202, 249, 0.08)',
+          },
+          '&.Mui-selected': {
+            backgroundColor: 'rgba(144, 202, 249, 0.16)',
+            '&:hover': {
+              backgroundColor: 'rgba(144, 202, 249, 0.24)',
+            },
+          },
         },
       },
     },
     MuiListItemIcon: {
       styleOverrides: {
         root: {
+          color: '#90caf9',
+          minWidth: 40,
+        },
+      },
+    },
+    MuiListItemText: {
+      styleOverrides: {
+        primary: {
           color: '#fff',
+        },
+      },
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#1e1e1e',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.12)',
+        },
+      },
+    },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          color: '#90caf9',
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#1e1e1e',
+          borderRadius: 8,
+          border: '1px solid rgba(255, 255, 255, 0.12)',
+        },
+      },
+    },
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          backgroundColor: '#1e1e1e',
+          borderRadius: 8,
         },
       },
     },
@@ -85,8 +150,9 @@ function App() {
   const drawer = (
     <Box>
       <Toolbar>
-        <Typography variant="h6" noWrap component="div" color="inherit">
-          Video Stream
+        <StreamIcon sx={{ mr: 1.5, fontSize: 28 }} />
+        <Typography variant="h6" noWrap component="div">
+          Fluently Stream
         </Typography>
       </Toolbar>
       <Divider sx={{ bgcolor: 'rgba(255,255,255,0.12)' }} />
@@ -94,14 +160,6 @@ function App() {
         <ListItemButton
           onClick={() => setCurrentView('list')}
           selected={currentView === 'list'}
-          sx={{
-            '&.Mui-selected': {
-              backgroundColor: 'rgba(255,255,255,0.1)',
-              '&:hover': {
-                backgroundColor: 'rgba(255,255,255,0.2)',
-              },
-            },
-          }}
         >
           <ListItemIcon>
             <VideoLibraryIcon />
@@ -111,14 +169,6 @@ function App() {
         <ListItemButton
           onClick={() => setCurrentView('upload')}
           selected={currentView === 'upload'}
-          sx={{
-            '&.Mui-selected': {
-              backgroundColor: 'rgba(255,255,255,0.1)',
-              '&:hover': {
-                backgroundColor: 'rgba(255,255,255,0.2)',
-              },
-            },
-          }}
         >
           <ListItemIcon>
             <CloudUploadIcon />
@@ -138,10 +188,6 @@ function App() {
           sx={{
             width: { sm: `calc(100% - ${drawerWidth}px)` },
             ml: { sm: `${drawerWidth}px` },
-            bgcolor: 'white',
-            color: 'text.primary',
-            boxShadow: 'none',
-            borderBottom: '1px solid rgba(0,0,0,0.12)',
           }}
         >
           <Toolbar>
@@ -154,8 +200,9 @@ function App() {
             >
               <MenuIcon />
             </IconButton>
+            <StreamIcon sx={{ mr: 1.5, display: { xs: 'none', sm: 'block' } }} />
             <Typography variant="h6" noWrap component="div">
-              {currentView === 'list' ? 'My Videos' : 'Upload New Video'}
+              Fluently Stream
             </Typography>
           </Toolbar>
         </AppBar>

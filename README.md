@@ -1,14 +1,107 @@
-# Secure Video Upload and Streaming Application
+# Fluently Stream
 
-A secure video upload and streaming application built with React.js, Flask, Apache Kafka, and MySQL.
+A modern video streaming platform built with React and Flask, featuring a sleek dark mode interface and secure video handling capabilities.
 
 ## Features
 
-- Secure video upload with encryption
-- Video streaming using Apache Kafka
-- React.js frontend for smooth user experience
-- Flask backend API
-- MySQL database for metadata storage
+- 🎥 Secure video streaming with encryption
+- 🌓 Modern dark mode interface
+- 📱 Responsive design for all devices
+- 🔒 Encrypted video storage
+- 📤 Easy video upload functionality
+- 📚 Video library management
+- 🔄 Automatic retry mechanism for network issues
+- 🎮 Custom video player controls
+- 🚀 Real-time video buffering status
+
+## Tech Stack
+
+### Frontend
+- React.js with TypeScript
+- Material UI (MUI) for UI components
+- Axios for API communication
+
+### Backend
+- Flask (Python)
+- SQLAlchemy for database management
+- Cryptodome for video encryption
+- Flask-CORS for cross-origin handling
+
+## Prerequisites
+
+Before running the application, make sure you have the following installed:
+- Node.js (v14 or higher)
+- Python 3.8 or higher
+- pip (Python package manager)
+- MySQL (or your preferred database)
+
+## Setup Instructions
+
+### 1. Clone the Repository
+```bash
+git clone <repository-url>
+cd innovator-assignment
+```
+
+### 2. Backend Setup
+
+```bash
+# Navigate to backend directory
+cd backend
+
+# Create a virtual environment
+python -m venv venv
+
+# Activate virtual environment
+# For Windows
+venv\Scripts\activate
+# For macOS/Linux
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Create .env file
+cp .env.example .env
+# Update the .env file with your database credentials and other configurations
+
+# Initialize the database
+flask db upgrade
+
+# Run the backend server
+python run.py
+```
+
+The backend server will start at `http://localhost:5001`
+
+### 3. Frontend Setup
+
+```bash
+# Navigate to frontend directory
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start the development server
+npm start
+```
+
+The frontend application will start at `http://localhost:3000`
+
+## Environment Variables
+
+### Backend (.env)
+```
+DATABASE_URL=mysql://user:password@localhost/dbname
+SECRET_KEY=your-secret-key
+UPLOAD_FOLDER=uploads
+```
+
+### Frontend (.env)
+```
+REACT_APP_API_URL=http://localhost:5001
+```
 
 ## Project Structure
 
@@ -16,86 +109,64 @@ A secure video upload and streaming application built with React.js, Flask, Apac
 .
 ├── backend/
 │   ├── app/
-│   │   ├── __init__.py
-│   │   ├── models.py
 │   │   ├── routes.py
+│   │   ├── models.py
 │   │   └── encryption.py
 │   ├── uploads/
-│   └── requirements.txt
+│   ├── requirements.txt
+│   └── run.py
+│
 └── frontend/
-    └── src/
-        └── components/
+    ├── src/
+    │   ├── components/
+    │   ├── App.tsx
+    │   └── index.tsx
+    ├── package.json
+    └── tsconfig.json
 ```
 
-## Setup Instructions
+## Usage
 
-### Backend Setup
+1. Open your browser and navigate to `http://localhost:3000`
+2. Use the sidebar to navigate between video list and upload sections
+3. Upload videos using the upload section
+4. View and manage your videos in the video list section
+5. Click on any video to start streaming
 
-1. Create and activate a virtual environment:
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+## Security Features
 
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+- Video files are encrypted at rest
+- Secure streaming with chunk-based decryption
+- Frontend-backend communication over HTTPS
+- Protected API endpoints
 
-3. Set up MySQL database:
-- Create a new MySQL database
-- Update the database configuration in the Flask app
+## Error Handling
 
-4. Set up Kafka:
-- Install and start Apache Kafka
-- Create necessary topics
+The application includes robust error handling for:
+- Network issues
+- Video decoding problems
+- File format incompatibilities
+- Server connection errors
 
-5. Start the Flask server:
-```bash
-python run.py
-```
+## Performance Optimizations
 
-### Frontend Setup
+- Chunk-based video streaming
+- Automatic quality adjustment
+- Efficient caching mechanisms
+- Optimized video buffering
 
-1. Install dependencies:
-```bash
-cd frontend
-npm install
-```
+## Contributing
 
-2. Start the development server:
-```bash
-npm start
-```
-
-## Environment Variables
-
-Create a `.env` file in the backend directory with the following variables:
-
-```
-DATABASE_URL=mysql://user:password@localhost/dbname
-SECRET_KEY=your-secret-key
-KAFKA_BOOTSTRAP_SERVERS=localhost:9092
-```
-
-## Security Notes
-
-- Videos are encrypted before storage using AES encryption
-- Encryption keys are securely managed
-- Streaming is handled through secure Kafka topics
-
-## API Documentation
-
-### Video Upload
-- POST `/api/videos/upload`
-  - Accepts multipart form data with video file
-  - Returns video ID and metadata
-
-### Video Streaming
-- GET `/api/videos/stream/<video_id>`
-  - Streams the decrypted video through Kafka
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## License
 
-MIT License
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+---
+
+Authored by [@tknishh](https://www.github.com/tknishh)

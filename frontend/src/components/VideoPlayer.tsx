@@ -35,6 +35,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, onClose }) => {
         setRetryCount(0);
         setIsBuffering(true);
         
+        // Store video element reference
+        const videoElement = videoRef.current;
+        
         // Fetch video information
         axios.get(`http://localhost:5001/api/videos`)
             .then(response => {
@@ -54,10 +57,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, onClose }) => {
             if (retryTimeoutRef.current) {
                 window.clearTimeout(retryTimeoutRef.current);
             }
-            if (videoRef.current) {
-                videoRef.current.pause();
-                videoRef.current.src = '';
-                videoRef.current.load();
+            // Use the stored reference
+            if (videoElement) {
+                videoElement.pause();
+                videoElement.src = '';
+                videoElement.load();
             }
         };
     }, [videoId]);
@@ -77,12 +81,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, onClose }) => {
                     if (retryCount < MAX_RETRIES) {
                         retryTimeoutRef.current = window.setTimeout(() => {
                             retryPlayback();
-                        }, 1000);
+                        }, 2000); // Increased timeout to 2 seconds
                         return;
                     }
                     break;
                 case 3:
                     errorMessage += 'Error decoding video';
+                    if (retryCount < MAX_RETRIES) {
+                        retryTimeoutRef.current = window.setTimeout(() => {
+                            retryPlayback();
+                        }, 2000); // Also retry on decode errors
+                        return;
+                    }
                     break;
                 case 4:
                     errorMessage += 'Video format not supported';
@@ -143,17 +153,23 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, onClose }) => {
             console.log(`Retrying playback (attempt ${retryCount + 1}/${MAX_RETRIES})`);
             
             // Clear the video source and reload
+            videoRef.current.pause();
             videoRef.current.src = '';
             videoRef.current.load();
             
-            // Set new source with cache buster
+            // Set new source with cache buster and quality parameter
             const timestamp = new Date().getTime();
-            videoRef.current.src = `http://localhost:5001/api/videos/stream/${videoId}?t=${timestamp}`;
+            videoRef.current.src = `http://localhost:5001/api/videos/stream/${videoId}?t=${timestamp}&quality=auto`;
             
-            videoRef.current.play().catch(err => {
-                console.error('Error on retry:', err);
-                setError('Failed to play video on retry');
-            });
+            // Add a small delay before playing
+            setTimeout(() => {
+                if (videoRef.current) {
+                    videoRef.current.play().catch(err => {
+                        console.error('Error on retry:', err);
+                        setError('Failed to play video on retry');
+                    });
+                }
+            }, 1000);
         } else {
             setError('Maximum retry attempts reached. Please try again later.');
         }

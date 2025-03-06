@@ -20,11 +20,13 @@ logger = logging.getLogger(__name__)
 
 # Configure Kafka
 KAFKA_BOOTSTRAP_SERVERS = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
-KAFKA_TOPIC = 'video-stream'
+KAFKA_SECURITY_PROTOCOL = os.getenv('KAFKA_SECURITY_PROTOCOL', 'PLAINTEXT')
+KAFKA_TOPIC = os.getenv('KAFKA_TOPIC', 'video-stream')
 
 # Initialize Kafka producer
 producer = KafkaProducer(
     bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
+    security_protocol=KAFKA_SECURITY_PROTOCOL,
     value_serializer=lambda v: json.dumps(v).encode('utf-8')
 )
 
@@ -134,7 +136,7 @@ def stream_video(video_id):
         if range_header:
             logger.debug(f"Range header received: {range_header}")
             byte1, byte2 = 0, None
-            match = re.search('bytes=(\d+)-(\d*)', range_header)
+            match = re.search(r'bytes=(\d+)-(\d*)', range_header)
             if match:
                 groups = match.groups()
                 if groups[0]:

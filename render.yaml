@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: fluently-stream-api
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn run:app --workers 4 --threads 2
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.8.0
+      - key: DATABASE_URL
+        value: mysql://root:JSOYXYIalnqQbNrqYtIebeoxcpBCiOiA@yamanote.proxy.rlwy.net:16684/railway
+      - key: KAFKA_BOOTSTRAP_SERVERS
+        value: producer-production-d59d.up.railway.app:29092
+      - key: KAFKA_SECURITY_PROTOCOL
+        value: PLAINTEXT
+      - key: SECRET_KEY
+        value: your-production-secret-key
+      - key: UPLOAD_FOLDER
+        value: /tmp/uploads
+      - key: CORS_ORIGINS
+        value: https://your-frontend-url.vercel.app,http://localhost:3000
+    healthCheckPath: /api/videos
+    disk:
+      name: uploads
+      mountPath: /tmp/uploads
+      sizeGB: 1 
